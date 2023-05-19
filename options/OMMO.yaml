@@ -1,0 +1,21 @@
+_parent_: options/LevelS2fM.yaml
+SDF:
+  NN_Init:
+    bias: 2.5                                               # define the init sphere
+    scale_mlp: 5                                           # to scale up/down the init sdf value
+
+data:
+  root: "data/OMMO"
+  inside: false
+  image_size: [ 676,1280 ]
+  bound_max: [ 5., 5., 5. ]
+  bound_min: [ -5.,-5.,-5. ]
+  bgcolor: [0,0,0]
+  s05:
+    scale_init: 0.4
+    rad_init: 0
+ 
+
+
+sfm_mode: full
+refine_again: false
