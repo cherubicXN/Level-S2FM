@@ -522,7 +522,7 @@ class CameraSet():
                 d_consistent = torch_F.smooth_l1_loss(d_points.view(*depth_mlp.shape)[mask_finish],
                                                       depth_mlp[mask_finish], reduction="mean")
                 if self.opt.data.dataset not in ["TanksAndTemple", "BlendedMVS", "scannet", "DTU", "llff", "ETH3D",
-                                                 "ETH3D_sp"]:
+                                                 "ETH3D_sp","OMMO"]:
                     weight_dc = torch.exp(-100 * rgb_loss.view(*depth_mlp.shape)[~mask_finish].detach())
                     d_consistent += self.opt.data.unfinish_dc * rgb.shape[0] * (
                             weight_dc.detach_() * torch_F.smooth_l1_loss(

@@ -254,7 +254,7 @@ class Registration():
                     tracing_loss_record.append(torch.norm(xyzs - pts3d_pairs_i[0][~mask_new_pts], dim=-1).detach())
                 else:
                     loss.tracing_loss += 0
-
+            
             rand_idx = torch.randperm(len(pts_exists), device=self.opt.device)[:4000]
             sdf_exist = self.sdf_func.infer_sdf(pts_exists[rand_idx])
             mask_tem_sdf = sdf_exist.view(-1, 1).squeeze().abs() < self.sdf_func.sdf_threshold
@@ -271,6 +271,10 @@ class Registration():
             loss.tracing_loss = loss.tracing_loss / num_frame
             loss.sdf_surf = loss.sdf_surf
             loss.eikonal_loss = torch_F.l1_loss(grad_sampled, torch.ones_like(grad_sampled))
+            #check if there is nan in loss
+            for key in loss.keys():
+                if torch.isnan(loss[key]):
+                    import pdb; pdb.set_trace()
             loss = self.summarize_loss(self.opt, loss)
             loss.all.backward()
             self.optim.step()

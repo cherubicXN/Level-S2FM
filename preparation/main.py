@@ -12,6 +12,7 @@ import os
 from database import COLMAPDatabase, blob_to_array, pair_id_to_image_ids
 import pycolmap
 from read_write_model import read_points3D_binary
+from tqdm import tqdm 
 
 
 def read_matches_from_db(database_path: Path
@@ -108,10 +109,18 @@ def main():
     os.system(cmd)
 
     K=None
+
     for camera_id, model, width, height,params,f in db.execute("SELECT  camera_id, model, width, height,params,prior_focal_length FROM cameras"):
         f,cx,cy=blob_to_array(params,np.float64)
         K=np.array([[f,0,cx],[0,f,cy],[0,0,1]])
 
+    # if not os.path.exists(f"{working_path}/intrinsics.txt"):
+    with open(f"{working_path}/intrinsics.txt",'w') as f:            
+        for i in range(3):
+            for j in range(3):
+                f.write(f"{K[i,j]} ")
+            f.write("\n")
+    
     if args.data == 'blender':
         img_files=sorted(os.listdir(f"{working_path}/images"),key=lambda x:int((str(x).split('.')[0]).split("_")[-1]))
     elif args.data in ['TanksAndTemple', 'BlendedMVS']:
@@ -176,7 +185,6 @@ def main():
 
     for idx_i in range(len(img_files)):
         ref_img_name = img_files[idx_i]
-        print(ref_img_name)
         for idx_ij in range(len(img_files)-idx_i-1):
             src_img_name = img_files[idx_i+idx_ij+1]
             pairs_full.append((ref_img_name, src_img_name))
@@ -189,7 +197,6 @@ def main():
                     inverse = True
                 except:
                     index_find = -1
-            print(index_find)
             if (index_find == -1) | (len(matches[index_find]) < 50):
                 matches_full.append(np.uint32(np.array([])))
             else:
@@ -200,7 +207,7 @@ def main():
                     # matches_full.append(np.concatenate([matches[indx_find][:,1:],matches[indx_find][:,:1]],axis=-1))
     two_view_dict = dict()
     mask_inlier = []
-    for img_pair,match in zip(pairs_full,matches_full):
+    for img_pair,match in tqdm(zip(pairs_full,matches_full)):
         print(img_pair)
         left_img_name,right_img_name=img_pair[0],img_pair[1]
         if len(match)!=0:
