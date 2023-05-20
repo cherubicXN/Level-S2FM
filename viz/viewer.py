@@ -185,6 +185,8 @@ class PipelineView:
 
     @staticmethod
     def load_mesh(mesh_file):
+        if not os.path.exists(mesh_file):
+            return None
         mesh = o3d.io.read_triangle_mesh(mesh_file)
         mesh.compute_vertex_normals()
         mesh.compute_triangle_normals()
@@ -247,10 +249,13 @@ class PipelineView:
         cameras = self.load_cameras(info['cam'])
         intrinsic = o3d.camera.PinholeCameraIntrinsic(width=self.width,height=self.height, fx=cameras[0].K[0,0], fy=cameras[0].K[1,1], cx=cameras[0].K[0,2], cy=cameras[0].K[1,2])
         o3d_mat = np.array(
-                [[0,1,0,0],
-                [-1,0,0,0],
-                [0,0,1,0],
-                [0,0,0,1]
+                [
+                    # [0,1,0,0],
+                    # [-1,0,0,0],
+                    [1,0,0,0],
+                    [0,1,0,0],
+                    [0,0,1,0],
+                    [0,0,0,1]
                 ]
             )
         if is_on:
@@ -289,7 +294,8 @@ class PipelineView:
             self.pcdview.scene.add_geometry(f'cam-{cam.id}',cam.frustum,self.cam_material)
         
         mesh = self.load_mesh(info['mesh'])
-        self.pcdview.scene.add_geometry('mesh', mesh,self.pcd_material)
+        if mesh is not None:
+            self.pcdview.scene.add_geometry('mesh', mesh,self.pcd_material)
         self.pcdview.scene.add_geometry('pcd',pcd,self.point_material)
 
     def clear_geometry(self):
@@ -329,8 +335,11 @@ class PipelineView:
         focal_length = 1000
         intrinsic = o3d.camera.PinholeCameraIntrinsic(width=self.width,height=self.height, fx=focal_length,fy=focal_length, cx=self.width//2, cy=self.height*0.75)
         o3d_mat = np.array(
-            [[0,1,0,0],
-             [-1,0,0,0],
+            [
+            #  [0,1,0,0],
+            #  [-1,0,0,0],
+             [1,0,0,0],
+             [0,1,0,0],
              [0,0,1,0],
              [0,0,0,1]
             ]
@@ -361,7 +370,8 @@ class PipelineView:
         
         # if self.cnt % 5 == 0:
         mesh = self.load_mesh(info['mesh'])
-        self.pcdview.scene.add_geometry('mesh', mesh,self.pcd_material)
+        if mesh is not None:
+            self.pcdview.scene.add_geometry('mesh', mesh,self.pcd_material)
         if not self.show_mesh:
             self.pcdview.scene.show_geometry('mesh', False)
 
