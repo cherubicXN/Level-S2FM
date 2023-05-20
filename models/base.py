@@ -14,7 +14,8 @@ class Embedder_Hash(nn.Module):
                  include_input=True,
                  input_dim=3):
         super(Embedder_Hash, self).__init__()
-        self.embedder_obj = tcnn.Encoding(n_input_dims=input_dim, encoding_config=kwargs)
+        self.embedder_obj = tcnn.Encoding(n_input_dims=input_dim, encoding_config=kwargs,dtype=torch.float)
+        # self.embedder_obj = tcnn.Encoding(n_input_dims=input_dim, encoding_config=kwargs)
         self.input_dim = input_dim
         self.out_dim = self.embedder_obj.n_output_dims
         self.out_dim += self.input_dim
@@ -35,6 +36,8 @@ class Embedder_Hash(nn.Module):
         norm_input = (input - bound_min.to(input.device)) / ((bound_max - bound_min).to(input.device))
         org_shape=input.shape
         out = self.embedder_obj(norm_input.view(-1,3))
+        if out.isnan().any():
+            import pdb; pdb.set_trace()
         if self.include_input:
             out = torch.cat([input / rescale, out.view([*org_shape[:-1],-1])], dim=-1)
         return out
